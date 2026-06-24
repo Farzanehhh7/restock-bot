@@ -1,0 +1,35 @@
+name: Restock Bot
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-availability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: pip install requests beautifulsoup4
+
+      - name: Run checker
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: python checker.py
+
+      - name: Commit watchlist
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update watchlist [skip ci]"
+          file_pattern: watchlist.json
